@@ -1,0 +1,9 @@
+WHERE {
+    ?col    sosa:hasFeatureOfInterest   ?foi;
+            sosa:hasMember      		?obs.
+    ?obs    sosa:resultTime             ?time.
+    ?foi    geo:hasGeometry             ?geom.
+    ?geom   geo:asWKT                   ?wkt.
+    BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?historical_locations_id)
+    FILTER(?historical_locations_id = "{id}")
+}

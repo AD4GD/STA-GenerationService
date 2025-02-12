@@ -1,0 +1,56 @@
+---
+- import_playbook: "unwitting-purge-protector.yaml"
+  vars:
+    purge_subject: "stateless services"
+
+- name: purge stateless services
+  hosts: sta-instances
+  module_defaults:
+    k8s:
+      wait: true
+      state: absent
+      namespace: "{{ k8s_namespace }}"
+
+  tasks:
+
+    - name: "purge {{ application }} {{ expose_http_kind }}"
+      with_items: "{{ query('k8s', namespace=k8s_namespace, api_version=expose_http_k8s_entity_api_version, kind=expose_http_k8s_entity_kind, label_selector=('application=' + application)) }}"
+      k8s:
+        state: absent
+        definition:
+          apiVersion: "{{ expose_http_k8s_entity_api_version }}"
+          kind: "{{ expose_http_k8s_entity_kind }}"
+          metadata:
+            name: "{{ item.metadata.name }}"
+
+    - name: "purge service/{{ application }}-varnish"
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ application }}-varnish"
+
+    - name: "purge deployment/{{ application }}-varnish"
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Deployment
+          metadata:
+            name: "{{ application }}-varnish"
+
+    - name: "purge service/{{ application }}-django"
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ application }}-django"
+
+    - name: "purge deployment/{{ application }}-django"
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Deployment
+          metadata:
+            name: "{{ application }}-django"

@@ -1,0 +1,26 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?phenomenonTime
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col	rdf:type/rdfs:subClassOf*	sosa:ObservationCollection;
+                    sosa:phenomenonTime/time:hasBeginning/time:inXSDDateTimeStamp|sosa:phenomenonTime/time:inXSDDateTimeStamp|sosa:phenomenonTime	?phenomenonTime;
+                    sosa:hasFeatureOfInterest   ?foi;
+				  	sosa:hasMember      		?obs.
+            BIND(REPLACE(STR(?foi), "^.*/([^/]*)$", "$1") AS ?foi_id)
+            FILTER(?foi_id = "{id}")
+		}
+	 	$LIMIT_OFFSET$
+	}
+	?obs	rdf:type/rdfs:subClassOf*	sosa:Observation;
+            sosa:resultTime     		?resultTime;
+			sosa:hasResult              ?result.
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastream')) AS ?datastream_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/FeatureOfInterest')) AS ?feature_link)
+	OPTIONAL {
+		SELECT ?result (GROUP_CONCAT(?p; separator="|") AS ?p_values) (GROUP_CONCAT(?v; separator="|") AS ?v_values) WHERE {?result ?p ?v}
+  	}
+}
+$CODE_81$

@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link (STR(MAX(?description)) AS ?description) ?name ?datastreams_link ?historical_locations_link ?locations_link (MAX(?type) AS ?type) ?p_values ?v_values

@@ -1,0 +1,6 @@
+WHERE {
+    ?col    sosa:madeBySensor       ?sensor;
+            sosa:observedProperty   ?obs_property;
+            sosa:hasMember          ?obs.
+    ?obs    sosa:hasResult          ?r.
+}

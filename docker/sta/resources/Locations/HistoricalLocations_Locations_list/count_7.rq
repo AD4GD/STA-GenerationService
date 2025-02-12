@@ -1,0 +1,9 @@
+WHERE {
+    ?col    sosa:resultTime             ?time;
+            sosa:hasMember      		?obs.
+    ?obs    sosa:hasFeatureOfInterest   ?foi.
+    ?foi    wgs84:lat                   ?raw_lat;
+            wgs84:long                  ?raw_long.
+    BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?historical_locations_id)
+    FILTER(?historical_locations_id = "{id}")
+}

@@ -1,0 +1,40 @@
+WHERE {
+    {
+        SELECT DISTINCT ?sensor ?obs_property ?u ?u_symbol ?u_label ?label
+        $GRAPHS_LIST$
+        WHERE {
+            ?col    sosa:madeBySensor       ?sensor;
+                    sosa:observedProperty   ?obs_property;
+                    sosa:hasMember          ?obs.
+            ?obs    sosa:hasSimpleResult    ?r.
+            BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?observation_id)
+            FILTER(?observation_id = "{id}")
+            OPTIONAL {
+                ?r qudt:unit|om2:hasUnit ?u.
+                OPTIONAL { ?u qudt:symbol|om2:symbol ?u_symbol }
+                OPTIONAL { ?u rdfs:label ?u_label }
+                FILTER(lang(?u_label) = 'en' || lang(?u_label) = '')
+            }
+            OPTIONAL {
+                ?obs_property rdfs:label|skos:prefLabel ?label.
+                FILTER(lang(?label) = 'en' || lang(?label) = '')
+            }
+        }
+    }
+    BIND(REPLACE(STR(?sensor), ".*(#|/)", "") AS ?sensor_name)
+    BIND(REPLACE(STR(?obs_property), ".*(#|/)", "") AS ?obs_property_name)
+    BIND(CONCAT(?sensor_name, "-", ?obs_property_name) AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(CONCAT("The datastream of {pilot.name} by sensor: ", ?sensor_name, " for observed property: ",
+    STR(COALESCE(?label, ?obs_property_name))) AS ?description)
+    BIND(CONCAT(?sensor_name, ':', ?obs_property_name) AS ?name)
+    BIND(IF(!BOUND(?u), ogc:OM_ComplexObservation, ogc:OM_Measurement) AS ?observationType)
+    BIND(STR(COALESCE(?u_symbol, "U")) AS ?u_symbol)
+    BIND(STR(COALESCE(?u_label, "Unitless")) AS ?u_name)
+    BIND(STR(COALESCE(?u, qudt:UNITLESS)) AS ?u_definition)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Observations')) AS ?observations_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/ObservedProperty')) AS ?observed_property_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Sensor')) AS ?sensor_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Thing')) AS ?thing_link)
+}
+$CODE_12$

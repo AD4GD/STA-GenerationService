@@ -1,0 +1,19 @@
+# Byte-compiled / optimized
+__pycache__/
+*.py[cod]
+
+# backup files
+*~
+
+# local files
+.env
+reports
+.cache
+db.sqlite3
+.idea
+.coverage
+compose/local*.yaml
+docker/.depends.mk
+
+# Ignore Gradle project-specific cache directory
+.gradle

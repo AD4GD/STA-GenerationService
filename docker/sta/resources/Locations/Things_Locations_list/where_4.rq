@@ -1,0 +1,27 @@
+WHERE {
+    {
+        SELECT DISTINCT ?foi (MAX(?lat) AS ?lat) (MAX(?long) AS ?long)
+        $GRAPHS_LIST$
+        WHERE {
+            ?obs    rdf:type/rdfs:subClassOf*   sosa:Observation;
+                    sosa:hasFeatureOfInterest   ?foi;
+                    sosa:madeBySensor           ?sensor.
+            ?foi    geo:hasGeometry             ?geom.
+            ?geom   geo:asWKT                   ?wkt.
+            BIND(STRBEFORE(STRAFTER(STR(?wkt), "("), " ") AS ?lat)
+            BIND(STRBEFORE(STRAFTER(STR(?wkt), " "), ")") AS ?long)
+            BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?thing_id)
+            FILTER(?thing_id = "{id}")
+        }
+        $LIMIT_OFFSET$
+    }
+    BIND(CONCAT("POINT(", ?lat, " ", ?long, ")") AS ?point_text)
+    BIND(CONCAT("lat=", ?lat, ":long=", ?long) AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(CONCAT("Location with latitude=", ?lat, " and longitude=", ?long) AS ?description)
+    BIND(CONCAT("Lat=", ?lat, " long=", ?long) AS ?name)
+    BIND("application/vnd.geo+json" AS ?encodingType)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Things')) AS ?things_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/HistoricalLocations')) AS ?historical_locations_link)
+}
+$CODE_0$

@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link (STR(MAX(?description)) AS ?description) ?name ?encodingType ?type ?datastreams_link

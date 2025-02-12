@@ -1,0 +1,3 @@
+WHERE {
+    ?sensor     rdf:type/rdfs:subClassOf*   sosa:Sensor.
+}

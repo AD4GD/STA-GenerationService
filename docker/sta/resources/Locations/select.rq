@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link ?description ?name ?encodingType ?lat ?long ?things_link ?historical_locations_link

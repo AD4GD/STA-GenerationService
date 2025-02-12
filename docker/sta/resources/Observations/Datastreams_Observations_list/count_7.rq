@@ -1,0 +1,14 @@
+WHERE {
+    ?col    rdf:type/rdfs:subClassOf*   sosa:ObservationCollection;
+            sosa:resultTime     		?resultTime;
+            sosa:hasMember              ?obs.
+    ?obs    rdf:type/rdfs:subClassOf*   sosa:Observation;
+            sosa:phenomenonTime/time:hasBeginning/time:inXSDDateTimeStamp|sosa:phenomenonTime/time:inXSDDateTimeStamp|sosa:phenomenonTime	?phenomenonTime;
+            sosa:madeBySensor           ?sensor;
+            sosa:observedProperty       ?obs_property;
+            sosa:hasResult              ?result.
+    BIND(REPLACE(STR(?sensor), ".*(#|/)", "") AS ?sensor_name)
+    BIND(REPLACE(STR(?obs_property), ".*(#|/)", "") AS ?obs_property_name)
+    BIND(CONCAT(?sensor_name, "-", ?obs_property_name) AS ?datastream_id)
+    FILTER(?datastream_id = "{id}")
+}

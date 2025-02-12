@@ -1,0 +1,62 @@
+default:
+  image: registry.paas.psnc.pl/devlab/gitlab-runner:v1
+
+variables:
+  GIT_STRATEGY: clone
+
+stages:
+  - precommit
+  - build
+  - test
+  - upload
+  - update_inventory
+
+Run pre-commit check:
+  stage: precommit
+  script:
+    - devlab_run_pre_commit 100
+  artifacts:
+    paths:
+      - ./reports
+
+Build images:
+  stage: build
+  script:
+    - devlab_build_images
+
+Test:
+  stage: test
+  script:
+    - devlab_test django
+  artifacts:
+    paths:
+      - ./reports
+
+Upload images:
+  stage: upload
+  script:
+    - devlab_push_images
+
+Update inventory dev:
+  stage: update_inventory
+  variables:
+    inventory_repository_name: inventory-dev
+    inventory_hostname: $inventory_hostname_dev
+    gitlab_push_token: $gitlab_push_token_dev
+  script:
+    - devlab_update_inventory
+  only:
+    variables:
+      - $CI_COMMIT_BRANCH == $branch_allowed_to_update_dev_inventory
+
+Update inventory prod:
+  stage: update_inventory
+  variables:
+    inventory_repository_name: inventory-prod
+    inventory_hostname: $inventory_hostname_prod
+    gitlab_push_token: $gitlab_push_token_prod
+  script:
+    - devlab_update_inventory
+  only:
+    variables:
+      - $CI_COMMIT_BRANCH == $branch_allowed_to_update_prod_inventory

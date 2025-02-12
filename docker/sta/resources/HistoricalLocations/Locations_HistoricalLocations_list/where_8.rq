@@ -1,0 +1,24 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?time
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col    sosa:hasFeatureOfInterest   ?foi;
+                    sosa:hasMember              ?obs.
+            ?obs    sosa:resultTime             ?time.
+            ?foi    geo:hasGeometry             ?geom.
+            ?geom   geo:asWKT                   ?wkt.
+
+            BIND(REPLACE(?raw_lat , "[^0-9.]", "") AS ?lat)
+            BIND(REPLACE(?raw_long, "[^0-9.]", "") AS ?long)
+            BIND(CONCAT("lat=", ?lat, ":long=", ?long) AS ?locations_id)
+            FILTER(?locations_id= "{id}")
+		}
+	 	$LIMIT_OFFSET$
+	}
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Locations')) AS ?locations_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Thing')) AS ?thing_link)
+}
+$CODE_64$

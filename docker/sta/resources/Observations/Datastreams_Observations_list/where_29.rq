@@ -1,0 +1,30 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?resultTime
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col	rdf:type/rdfs:subClassOf*	sosa:ObservationCollection;
+                    sosa:resultTime             ?resultTime;
+                    sosa:madeBySensor           ?sensor;
+				  	sosa:hasMember      		?obs.
+            ?obs	rdf:type/rdfs:subClassOf*	sosa:Observation;
+                    sosa:observedProperty   	?obs_property.
+            BIND(REPLACE(STR(?sensor), ".*(#|/)", "") AS ?sensor_name)
+            BIND(REPLACE(STR(?obs_property), ".*(#|/)", "") AS ?obs_property_name)
+            BIND(CONCAT(?sensor_name, "-", ?obs_property_name) AS ?datastream_id)
+            FILTER(?datastream_id = "{id}")
+		}
+	 	$LIMIT_OFFSET$
+	}
+	?obs    sosa:phenomenonTime/time:hasBeginning/time:inXSDDateTimeStamp|sosa:phenomenonTime/time:inXSDDateTimeStamp|sosa:phenomenonTime	?phenomenonTime;
+            sosa:hasResult          ?result.
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastream')) AS ?datastream_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/FeatureOfInterest')) AS ?feature_link)
+	OPTIONAL {
+		SELECT ?result (GROUP_CONCAT(?p; separator="|") AS ?p_values) (GROUP_CONCAT(?v; separator="|") AS ?v_values) WHERE {?result ?p ?v}
+  	}
+}
+
+$CODE_22$

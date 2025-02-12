@@ -1,0 +1,201 @@
+---
+application: sta
+ansible_connection: local
+registry_project: demeter
+registry_application: sta
+initial_replicas: 1
+progress_deadline_seconds: 300
+with_async_workers: true
+with_sta: true
+use_environment_ingress_address: false
+k8s_wait_timeout: 600
+
+project_name: DEMETER
+repository_name: sta
+
+base_image_registry_domain: "{{ registry_domain }}"
+base_image_registry_project: "base"
+postgres_init_containers_base_image: "{{ base_image_registry_domain }}/{{ base_image_registry_project }}/alpine"
+
+base_image_registry_domain: "{{ registry_domain }}"
+base_image_registry_project: "base"
+postgres_init_containers_base_image: "{{ base_image_registry_domain }}/{{ base_image_registry_project }}/alpine"
+
+readiness_probe_initial_delay: 3
+readiness_probe_period: 15
+readiness_probe_timeout: 10
+
+liveness_probe_initial_delay: 30
+liveness_probe_period: 30
+liveness_probe_timeout: 60
+
+with_stateless_services_horizontal_pod_autoscalers: true
+
+django_autoscaler:
+  min_replicas: 2
+  max_replicas: 4
+  target_cpu_utilization_percentage: 90
+
+varnish_autoscaler:
+  min_replicas: 2
+  max_replicas: 4
+  target_cpu_utilization_percentage: 90
+
+django_resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+postgres_resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+varnish_resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "500m"
+    memory: "512Mi"
+
+pgbouncer_resources:
+  requests:
+    cpu: "50m"
+    memory: "50M"
+  limits:
+    cpu: "200m"
+    memory: "200M"
+
+sta_resources:
+  requests:
+    cpu: "200m"
+    memory: "256Mi"
+  limits:
+    cpu: "1000m"
+    memory: "512Mi"
+
+deploy_stateful_services: true
+
+deploy_postgres: "{{ deploy_stateful_services }}"
+deploy_memcached: "{{ deploy_stateful_services }}"
+
+postgres_pvc_storage_size: "1Gi"
+
+postgres_pvc_storage_class_name: ""
+
+postgres_pvc_access_mode_type: ""
+
+create_non_root_database: true
+
+image_pull_secret: "regcred"
+create_run_any_uid_service_account: true
+
+
+MAIN_DOMAIN: "{{ inventory_hostname|regex_replace('-sta-instance$', '') }}"
+SECONDARY_DOMAIN: "{{ application }}-varnish:9002"
+
+
+expose_http_kind: "routes"
+expose_http_host: "{{ MAIN_DOMAIN }}"
+# possible values: wildcard, static, acme, disabled
+expose_http_tls_mode: 'wildcard'
+expose_http_tls_redirect: true
+expose_http_tls_allow_also_non_encrypted: false
+expose_http_ip_whitelist: ""
+expose_http_tls_secret_name: "{{ application }}-tls-secret"
+expose_http_annotations: {}
+expose_http_ingress_annotations: {}
+expose_http_routes_annotations: {}
+expose_http_name_prefix: "{{ application }}"
+expose_http_k8s_entity_kind: "{{ 'Route' if expose_http_kind == 'routes' else 'Ingress' }}"
+expose_http_k8s_entity_api_version: "{{ 'v1' if expose_http_kind == 'routes' else 'extensions/v1beta1' }}"
+
+# TODO DV-272 remove KUBECTL_COMMAND
+KUBECTL_COMMAND: kubectl
+kubectl_command: "{{ KUBECTL_COMMAND }}"
+
+# TODO DV-272 remove IMAGE_TAG
+image_tag: "{{ application_version }}"
+stateless_services_image_tag: "{{ image_tag }}"
+
+# TODO DV-276: this should be a fixed value
+stateful_services_image_tag: "{{ image_tag }}"
+use_backup_velero_io_backup_volumes_annotation: false
+use_postgres_backup_velero_io_backup_volumes_annotation: false
+
+stateless_services_image_pull_policy: "{{ 'IfNotPresent' if stateless_services_image_tag.startswith('commit-') else 'Always' }}"
+
+ingress_scheme: "{{ 'https' if expose_http_tls_mode != 'disabled' else 'http' }}"
+
+# TODO DV-272 remove ENVIRONMENT_INGRESS_ADDRESS
+environment_ingress_address: "{{ ENVIRONMENT_INGRESS_ADDRESS|default('') }}"
+ingress_address: "{{ environment_ingress_address if use_environment_ingress_address else MAIN_DOMAIN }}"
+
+django_configmap__05_defaults:
+  MAIN_DOMAIN: "{{ MAIN_DOMAIN }}"
+  SECONDARY_DOMAIN: "{{ SECONDARY_DOMAIN }}"
+
+  DATABASE_NAME: "{{ application|replace('-', '_') }}_db"
+  DATABASE_HOST: "{{ application }}-postgres"
+  DATABASE_PORT: "5432"
+
+  MEMCACHED_HOST: "{{ application }}-memcached"
+  MEMCACHED_PORT: "11211"
+
+django_secret__05_defaults:
+  SENTRY_DSN: "https://132b6f2afb0c43b993b3f094c58a6658@sentry.apps.psnc.pl/6"
+
+  SECRET_KEY:
+    when_missing: "{{ random_django_secret_key }}"
+
+  DATABASE_USER:
+    when_missing: "{{ random_postgres_user }}"
+  DATABASE_PASS:
+    when_missing: "{{ random_postgres_pass }}"
+
+varnish_configmap__05_defaults:
+  MAIN_DOMAIN: "{{ MAIN_DOMAIN }}"
+  SECONDARY_DOMAIN: "{{ SECONDARY_DOMAIN }}"
+  DJANGO_HOSTS: "{{ application }}-django:9001"
+  VARNISH_IS_FIRST_HTTP_SERVER: "false"
+
+pgbouncer_configmap__05_defaults:
+  LOG_CONNECTIONS: "0"
+  LOG_DISCONNECTIONS: "0"
+  STATS_PERIOD: "5"
+
+postgres_configmap__05_defaults:
+  POSTGRES_DB: postgres
+
+postgres_secret__05_defaults:
+  POSTGRES_USER:
+    when_missing: "{{ random_postgres_user }}"
+  POSTGRES_PASSWORD:
+    when_missing: "{{ random_postgres_pass }}"
+
+sta_configmap__05_defaults:
+  MAIN_DOMAIN: "{{ MAIN_DOMAIN }}"
+
+random_django_secret_key: "{{ lookup('password', '/dev/null length=20 chars=ascii_letters,digits') }}"
+
+random_postgres_user: "{{ lookup('password', '/dev/null length=12 chars=ascii_lowercase') }}"
+random_postgres_pass: "{{ lookup('password', '/dev/null length=16 chars=ascii_letters,digits') }}"
+
+# DO NOT CHANGE DEFINITIONS BELOW
+#
+
+deployed_parameters_packs: "{{ ['django', 'varnish', 'pgbouncer'] + (['postgres'] if deploy_postgres else []) + (['memcached'] if deploy_memcached else []) }}"
+
+# definitions below are helper definitions - do not change this
+
+postgres_admin_connection_environment_variables: "PGUSER={{ postgres_secret_data.POSTGRES_USER }} PGPASSWORD={{ postgres_secret_data.POSTGRES_PASSWORD }} PGHOST={{ django_configmap_data.DATABASE_HOST }} PGPORT={{ django_configmap_data.DATABASE_PORT }} PGDATABASE={{ postgres_configmap_data.POSTGRES_DB }}"
+django_direct_connection_environment_variables: "DATABASE_HOST={{ django_configmap_data.DATABASE_HOST }} DATABASE_PORT={{ django_configmap_data.DATABASE_PORT }}"
+
+# DO NOT CHANGE DEFINITIONS ABOVE

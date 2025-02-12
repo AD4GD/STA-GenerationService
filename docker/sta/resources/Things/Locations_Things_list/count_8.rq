@@ -1,0 +1,11 @@
+WHERE {
+    ?col    sosa:madeBySensor           ?sensor;
+            sosa:hasMember      		?obs.
+    ?obs    sosa:hasFeatureOfInterest   ?foi.
+    ?foi    geo:hasGeometry             ?geom.
+    ?geom   geo:asWKT                   ?wkt.
+    BIND(STRBEFORE(STRAFTER(STR(?wkt), "("), " ") AS ?lat)
+    BIND(STRBEFORE(STRAFTER(STR(?wkt), " "), ")") AS ?long)
+    BIND(CONCAT("lat=", ?lat, ":long=", ?long) AS ?location_id)
+    FILTER(?location_id = "{id}")
+}

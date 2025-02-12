@@ -1,0 +1,5 @@
+WHERE {
+    ?foi    rdf:type/rdfs:subClassOf*   sosa:FeatureOfInterest;
+            geo:hasGeometry             ?geom.
+    ?geom   geo:asWKT                   ?wkt.
+}

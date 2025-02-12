@@ -1,0 +1,37 @@
+WHERE {
+    {
+        SELECT DISTINCT ?sensor
+        $GRAPHS_LIST$
+        WHERE {
+            ?col    rdf:type/rdfs:subClassOf*   sosa:ObservationCollection;
+                    sosa:hasFeatureOfInterest   ?foi;
+                    sosa:madeBySensor           ?sensor.
+            ?foi    wgs84:lat                   ?raw_lat;
+                    wgs84:long                  ?raw_long.
+            BIND(REPLACE(?raw_lat , "[^0-9.]", "") AS ?lat)
+            BIND(REPLACE(?raw_long, "[^0-9.]", "") AS ?long)
+            BIND(CONCAT("lat=", ?lat, ":long=", ?long) AS ?location_id)
+            FILTER(?location_id = "{id}")
+        }
+ 		$LIMIT_OFFSET$
+	}
+    ?sensor  rdfs:label ?description.
+
+    FILTER(lang(?description) = 'en' || lang(?description) = '')
+    OPTIONAL {
+        ?sensor rdf:type/rdfs:subClassOf*|dct:type   ?type1.
+        FILTER(?type1 != sosa:Sensor)
+    }
+    BIND(COALESCE(?type1, sosa:Sensor) AS ?type)
+
+    BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(STR(CONCAT("Thing - ", ?id)) AS ?name)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastreams')) AS ?datastreams_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/HistoricalLocations')) AS ?historical_locations_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Locations')) AS ?locations_link)
+    OPTIONAL {
+		SELECT ?sensor (GROUP_CONCAT(?p; separator="|") AS ?p_values) (GROUP_CONCAT(?v; separator="|") AS ?v_values) WHERE {?sensor ?p ?v FILTER(?p != rdfs:label)}
+  	}
+}
+$CODE_100$

@@ -1,0 +1,22 @@
+WHERE {
+    {
+        SELECT DISTINCT ?sensor
+        $GRAPHS_LIST$
+        WHERE {
+            ?sensor     rdf:type/rdfs:subClassOf*   sosa:Sensor.
+        }
+        $LIMIT_OFFSET$
+    }
+    ?sensor     rdfs:label  ?description.
+    FILTER(lang(?description) = 'en' || lang(?description) = '')
+    OPTIONAL {
+        ?sensor rdf:type/rdfs:subClassOf*|dct:type   ?type1.
+        FILTER(?type1 != sosa:Sensor)
+    }
+    BIND(COALESCE(?type1, sosa:Sensor) as ?type)
+    BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") as ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(STR(CONCAT(?type, " - ", ?id)) AS ?name)
+    BIND(STR('application/json') AS ?encodingType)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastreams')) AS ?datastreams_link)
+}

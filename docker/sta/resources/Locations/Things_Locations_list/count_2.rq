@@ -1,0 +1,9 @@
+WHERE {
+    ?col    rdf:type/rdfs:subClassOf*   sosa:ObservationCollection;
+            sosa:hasFeatureOfInterest   ?foi;
+            sosa:madeBySensor           ?sensor.
+    ?foi    geo:hasGeometry             ?geom.
+    ?geom   geo:asWKT                   ?wkt.
+    BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?thing_id)
+    FILTER(?thing_id = "{id}")
+}

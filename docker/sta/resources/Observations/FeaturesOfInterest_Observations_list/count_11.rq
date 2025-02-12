@@ -1,0 +1,11 @@
+WHERE {
+    ?col    rdf:type/rdfs:subClassOf*   sosa:ObservationCollection;
+            sosa:resultTime     		?resultTime;
+            sosa:hasFeatureOfInterest   ?foi;
+            sosa:hasMember              ?obs.
+    ?obs    rdf:type/rdfs:subClassOf*   sosa:Observation;
+            sosa:phenomenonTime/time:hasBeginning/time:inXSDDateTimeStamp|sosa:phenomenonTime/time:inXSDDateTimeStamp|sosa:phenomenonTime	?phenomenonTime;
+            sosa:hasResult              ?result.
+    BIND(REPLACE(STR(?foi), "^.*/([^/]*)$", "$1") AS ?foi_id)
+    FILTER(?foi_id = "{id}")
+}

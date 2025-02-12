@@ -1,0 +1,5 @@
+WHERE {
+    ?foi    rdf:type/rdfs:subClassOf*   sosa:FeatureOfInterest;
+            wgs84:lat                   ?raw_lat;
+            wgs84:long                  ?raw_long.
+}

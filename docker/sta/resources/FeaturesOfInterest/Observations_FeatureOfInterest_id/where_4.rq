@@ -1,0 +1,23 @@
+WHERE {
+    {
+        SELECT DISTINCT ?foi (MAX(?lat) AS ?lat) (MAX(?long) AS ?long)
+        $GRAPHS_LIST$
+        WHERE {
+            ?obs    rdf:type/rdfs:subClassOf*   sosa:Observation;
+                    sosa:hasFeatureOfInterest   ?foi.
+            ?foi    geo:hasGeometry             ?geom.
+            ?geom   geo:asWKT                   ?wkt.
+            BIND(STRBEFORE(STRAFTER(STR(?wkt), "("), " ") AS ?lat)
+            BIND(STRBEFORE(STRAFTER(STR(?wkt), " "), ")") AS ?long)
+            BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?observation_id)
+            FILTER(?observation_id = "{id}")
+        }
+    }
+    BIND(REPLACE(STR(?foi), "^.*/([^/]*)$", "$1") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(CONCAT("Feature of interest: ", ?id, " with latitude=", ?lat, " and longitude=", ?long) AS ?description)
+    BIND(CONCAT("FoI: ", ?id) AS ?name)
+    BIND("application/vnd.geo+json" AS ?encodingType)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Observations')) AS ?observations_link)
+}
+$CODE_0$

@@ -1,0 +1,3 @@
+WHERE {
+    ?obs    rdf:type/rdfs:subClassOf*   sosa:Observation.
+}

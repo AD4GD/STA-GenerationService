@@ -1,0 +1,12 @@
+- name: check application deployment state
+  hosts: sta-instances
+
+  tasks:
+    - name: "check {{ application }} deployments state"
+      shell: >
+        {{ kubectl_command }} -n {{ k8s_namespace }} rollout status deployment {{ item }}
+      changed_when: false
+      loop:
+        - "{{ application }}-django"
+        - "{{ application }}-varnish"
+        - "{{ application }}-sta"

@@ -1,0 +1,3 @@
+WHERE {
+    ?obscol sosa:observedProperty   ?obs_property.
+}

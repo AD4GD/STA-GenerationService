@@ -1,0 +1,17 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?time
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col    rdf:type/rdfs:subClassOf*   sosa:ObservationCollection;
+                    sosa:resultTime             ?time;
+                    sosa:hasMember              ?obs.
+		}
+	 	$LIMIT_OFFSET$
+	}
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Locations')) AS ?locations_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Thing')) AS ?thing_link)
+}
+$CODE_10$

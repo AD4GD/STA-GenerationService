@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link ?time ?locations_link ?thing_link

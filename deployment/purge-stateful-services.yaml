@@ -1,0 +1,110 @@
+---
+- import_playbook: "unwitting-purge-protector.yaml"
+  vars:
+    purge_subject: "stateful services"
+
+- name: purge storage services
+  hosts: sta-instances
+  module_defaults:
+    k8s:
+      wait: true
+      state: absent
+      namespace: "{{ k8s_namespace }}"
+
+  tasks:
+
+    - name: "purge service/{{ application }}-elastic"
+      when: "deploy_elastic"
+      tags:
+        - elastic
+        - service
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ application }}-elastic"
+
+    - name: "purge statefulset/{{ application }}-elastic"
+      when: "deploy_elastic"
+      tags:
+        - elastic
+        - statefulset
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: StatefulSet
+          metadata:
+            name: "{{ application }}-elastic"
+
+    - name: "purge pvc/{{ application }}-elastic"
+      when: "deploy_elastic"
+      tags:
+        - elastic
+        - persistentvolumeclaim
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: "{{ application }}-elastic"
+
+    - name: "purge service/{{ application }}-memcached"
+      when: "deploy_memcached"
+      tags:
+        - memcached
+        - service
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ application }}-memcached"
+
+    - name: "purge deployment/{{ application }}-memcached"
+      when: "deploy_memcached"
+      tags:
+        - memcached
+        - deployment
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Deployment
+          metadata:
+            name: "{{ application }}-memcached"
+
+    - name: "purge service/{{ application }}-postgres"
+      when: "deploy_postgres"
+      tags:
+        - postgres
+        - service
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: "{{ application }}-postgres"
+
+    - name: "purge statefulset/{{ application }}-postgres"
+      when: "deploy_postgres"
+      tags:
+        - postgres
+        - statefulset
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: StatefulSet
+          metadata:
+            name: "{{ application }}-postgres"
+
+    - name: "purge pvc/{{ application }}-postgres"
+      when: "deploy_postgres"
+      tags:
+        - postgres
+        - persistentvolumeclaim
+      k8s:
+        definition:
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: "{{ application }}-postgres"

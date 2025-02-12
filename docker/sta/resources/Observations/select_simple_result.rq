@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link ?phenomenonTime ?resultTime ?datastream_link ?feature_link ?result

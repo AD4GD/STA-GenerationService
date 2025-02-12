@@ -1,0 +1,9 @@
+WHERE {
+    ?col    sosa:observedProperty   ?obs_property;
+            sosa:hasMember          ?obs.
+    ?obs    sosa:madeBySensor       ?sensor;
+            sosa:hasResult          ?r.
+    BIND(REPLACE(STR(?obs_property), ".*(#|/)", "") AS ?obs_property_name)
+    BIND(CONCAT(?obs_property_name) AS ?observed_property_id)
+    FILTER(?observed_property_id = "{id}")
+}

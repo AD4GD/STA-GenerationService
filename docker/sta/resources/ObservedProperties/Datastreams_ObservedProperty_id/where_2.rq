@@ -1,0 +1,23 @@
+WHERE {
+    {
+        SELECT DISTINCT ?obs_property ?obs_property_name
+        $GRAPHS_LIST$
+        WHERE {
+            ?col    sosa:madeBySensor       ?sensor;
+                    sosa:hasMember          ?obs.
+            ?obs    sosa:observedProperty   ?obs_property.
+            BIND(REPLACE(STR(?sensor), ".*(#|/)", "") AS ?sensor_name)
+            BIND(REPLACE(STR(?obs_property), ".*(#|/)", "") AS ?obs_property_name)
+            BIND(CONCAT(?sensor_name, "-", ?obs_property_name) AS ?datastream_id)
+            FILTER(?datastream_id = "{id}")
+        }
+    }
+    OPTIONAL {
+        ?obs_property rdfs:label|skos:prefLabel ?description.
+        FILTER(lang(?description) = 'en' || lang(?description) = '')
+    }
+    BIND(CONCAT(?obs_property_name) AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(CONCAT("The observed property: ", ?obs_property_name, ", for pilot: {pilot.name}") AS ?name)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastreams')) AS ?datastreams_link)
+}

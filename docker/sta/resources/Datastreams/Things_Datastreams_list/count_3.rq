@@ -1,0 +1,7 @@
+WHERE {
+    ?obs    sosa:madeBySensor       ?sensor;
+            sosa:observedProperty   ?obs_property;
+            sosa:hasResult          ?r.
+    BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?thing_id)
+    FILTER(?thing_id = "{id}")
+}

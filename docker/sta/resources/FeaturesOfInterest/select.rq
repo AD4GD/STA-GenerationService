@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link (MAX(?description) AS ?description) ?name ?encodingType ?lat ?long ?observations_link

@@ -1,0 +1,20 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?phenomenonTime ?resultTime
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col	rdf:type/rdfs:subClassOf*	sosa:ObservationCollection;
+					sosa:phenomenonTime/time:hasBeginning/time:inXSDDateTimeStamp|sosa:phenomenonTime/time:inXSDDateTimeStamp|sosa:phenomenonTime	?phenomenonTime;
+					sosa:resultTime     		?resultTime;
+				  	sosa:hasMember      		?obs.
+		}
+	 	$LIMIT_OFFSET$
+	}
+	?obs	rdf:type/rdfs:subClassOf*	sosa:Observation;
+			sosa:hasSimpleResult        ?result.
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Datastream')) AS ?datastream_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/FeatureOfInterest')) AS ?feature_link)
+}
+$CODE_3$

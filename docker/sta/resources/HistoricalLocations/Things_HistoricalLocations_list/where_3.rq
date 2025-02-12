@@ -1,0 +1,19 @@
+WHERE {
+	{
+		SELECT DISTINCT ?obs ?time
+		$GRAPHS_LIST$
+	  	WHERE {
+			?col    sosa:resultTime     ?time;
+                    sosa:hasMember      ?obs.
+            ?obs    sosa:madeBySensor   ?sensor.
+            BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?thing_id)
+            FILTER(?thing_id= "{id}")
+		}
+	 	$LIMIT_OFFSET$
+	}
+	BIND(REPLACE(REPLACE(STRAFTER(STR(?obs), "observation/"), "/", "-"), "%20", "-") AS ?id)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')')) AS ?self_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Locations')) AS ?locations_link)
+    BIND(URI(CONCAT('{bare_request_url}(', ?id,')/Thing')) AS ?thing_link)
+}
+$CODE_2$

@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link (STR(MAX(?description)) AS ?description) (?obs_property AS ?definition) ?name ?datastreams_link

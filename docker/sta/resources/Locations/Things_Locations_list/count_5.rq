@@ -1,0 +1,9 @@
+WHERE {
+    ?col    sosa:hasFeatureOfInterest   ?foi;
+            sosa:hasMember      		?obs.
+    ?obs    sosa:madeBySensor           ?sensor.
+    ?foi    wgs84:lat                   ?raw_lat;
+            wgs84:long                  ?raw_long.
+    BIND(REPLACE(STR(?sensor), "^.*/([^/]*)$", "$1") AS ?thing_id)
+    FILTER(?thing_id = "{id}")
+}

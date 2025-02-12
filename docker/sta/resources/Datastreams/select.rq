@@ -1,0 +1,1 @@
+SELECT DISTINCT ?id ?self_link ?description ?name ?observationType ?u_symbol ?u_name ?u_definition ?observations_link ?observed_property_link ?sensor_link ?thing_link
