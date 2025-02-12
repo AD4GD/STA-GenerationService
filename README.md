@@ -168,6 +168,13 @@ See [docs/deployment.md](docs/deployment.md) more information.
 ### Certificates
 TO DO
 
+### License <a name="license"></a>
+
+The Linked Data Pipelines has an MIT License, as found in the [LICENSE](LICENSE) file.
+
+![alt text](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/License_icon-mit.svg/384px-License_icon-mit.svg.png)
+
 ## References
 
 [1]: https://docs.docker.com/compose/env-file/
+
